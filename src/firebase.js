@@ -1,8 +1,9 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, updateDoc, getDoc, increment } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 
-// Firebase configuration (replace with your actual Firebase config)
+// Firebase configuration (get this from Firebase console)
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
     apiKey: "AIzaSyBqftKj604Zx_-erVbJTIFXjwOVY5pPHYg",
     authDomain: "simpleincrement.firebaseapp.com",
@@ -18,6 +19,5 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore
 const db = getFirestore(app);
-const countRef = doc(db, "global", "counter");
 
-export { countRef, updateDoc, getDoc, increment };
+export default db;
