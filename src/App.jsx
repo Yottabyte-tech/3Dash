@@ -1,81 +1,52 @@
 // App.js
 import React, { useState, useEffect } from 'react';
-import db from './firebase.js'; // import the firebase configuration
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { countRef, updateDoc, getDoc, increment } from './firebase'; // Import Firestore functions
 
 function App() {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [users, setUsers] = useState([]);
+  const [count, setCount] = useState(null); // Store the count value
+  const [loading, setLoading] = useState(true); // Handle loading state
 
-  const usersCollectionRef = collection(db, "users");
-
-  // Add user to Firestore
-  const addUser = async () => {
+  // Function to increment count in Firestore
+  const incrementCount = async () => {
     try {
-      await addDoc(usersCollectionRef, {
-        name: name,
-        age: age,
+      await updateDoc(countRef, {
+        count: increment(1), // Increment the count by 1
       });
-      setName('');
-      setAge('');
-      fetchUsers(); // Refresh user list after adding
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.error("Error incrementing count: ", error);
     }
   };
 
-  // Fetch users from Firestore
-  const fetchUsers = async () => {
+  // Fetch the initial count and listen for updates in real-time
+  const fetchCount = async () => {
     try {
-      const querySnapshot = await getDocs(usersCollectionRef);
-      const usersList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setUsers(usersList);
+      const docSnap = await getDoc(countRef);
+      if (docSnap.exists()) {
+        setCount(docSnap.data().count);
+        setLoading(false); // Set loading to false once data is fetched
+      } else {
+        // If the document doesn't exist, initialize it with count 0
+        await updateDoc(countRef, {
+          count: 0,
+        });
+        setCount(0);
+        setLoading(false);
+      }
     } catch (error) {
-      console.error("Error fetching users: ", error);
+      console.error("Error getting count: ", error);
     }
   };
 
-  // Fetch users when the component mounts
+  // Use useEffect to fetch the count when the component mounts
   useEffect(() => {
-    fetchUsers();
+    fetchCount();
   }, []);
 
   return (
     <div className="App">
-      <h1>Firestore with React</h1>
-
-      {/* Add User Form */}
-      <div>
-        <input
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Age"
-          value={age}
-          onChange={(e) => setAge(e.target.value)}
-        />
-        <button onClick={addUser}>Add User</button>
-      </div>
-
-      {/* Display Users */}
-      <div>
-        <h2>Users:</h2>
-        <ul>
-          {users.map(user => (
-            <li key={user.id}>
-              {user.name} - {user.age} years old
-            </li>
-          ))}
-        </ul>
-      </div>
+      <h1>Global Click Counter</h1>
+      <h2>{loading ? 'Loading...' : count}</h2>
+      <button onClick={incrementCount}>Click Me</button>
     </div>
   );
 }
