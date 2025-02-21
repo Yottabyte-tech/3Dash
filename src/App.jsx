@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { countRef, updateDoc, getDoc, increment } from './firebase'; // Import Firestore functions
 
 function App() {
-  const [count, setCount] = useState(null); // Store the count value
+  const [count, setCount] = useState(0); // Store the count value
   const [loading, setLoading] = useState(true); // Handle loading state
 
   // Function to increment count in Firestore
