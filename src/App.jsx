@@ -1,36 +1,49 @@
 // App.js
 import React, { useState, useEffect } from 'react';
-import { countRef, updateDoc, increment, onSnapshot } from './firebase'; // Import onSnapshot
+import { countRef, updateDoc, getDoc, increment } from './firebase'; // Import Firestore functions
 
 function App() {
-  const [count, setCount] = useState(0); // Default to 0
+  const [count, setCount] = useState(0); // Store the count value
   const [loading, setLoading] = useState(true); // Handle loading state
 
-  // Function to increment the count in Firestore
+  // Function to increment count in Firestore
   const incrementCount = async () => {
     try {
+      const docSnap = await getDoc(countRef);
+      const currentCount = docSnap.exists() ? docSnap.data().count : 0;
+  
       await updateDoc(countRef, {
-        count: increment(1), // Increment the count by 1
+        count: currentCount + 1,  // Increment manually by 1
       });
     } catch (error) {
       console.error("Error incrementing count: ", error);
     }
   };
+  
 
-  // Fetch count initially and set up real-time updates
-  useEffect(() => {
-    // Listen to Firestore updates in real-time
-    const unsubscribe = onSnapshot(countRef, (docSnap) => {
+  // Fetch the initial count and listen for updates in real-time
+  const fetchCount = async () => {
+    try {
+      const docSnap = await getDoc(countRef);
       if (docSnap.exists()) {
         setCount(docSnap.data().count);
-        setLoading(false);
+        setLoading(false); // Set loading to false once data is fetched
       } else {
-        console.log("No such document!");
+        // If the document doesn't exist, initialize it with count 0
+        await updateDoc(countRef, {
+          count: 0,
+        });
+        setCount(0); c 
+        setLoading(false);
       }
-    });
+    } catch (error) {
+      console.error("Error getting count: ", error);
+    }
+  };
 
-    // Cleanup listener on component unmount
-    return () => unsubscribe();
+  // Use useEffect to fetch the count when the component mounts
+  useEffect(() => {
+    fetchCount();
   }, []);
 
   return (
