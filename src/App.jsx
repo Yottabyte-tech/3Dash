@@ -1,12 +1,12 @@
 // App.js
 import React, { useState, useEffect } from 'react';
-import { countRef, updateDoc, getDoc, increment } from './firebase'; // Import Firestore functions
+import { countRef, updateDoc, increment, onSnapshot } from './firebase'; // Import onSnapshot
 
 function App() {
-  const [count, setCount] = useState(0); // Store the count value
+  const [count, setCount] = useState(0); // Default to 0
   const [loading, setLoading] = useState(true); // Handle loading state
 
-  // Function to increment count in Firestore
+  // Function to increment the count in Firestore
   const incrementCount = async () => {
     try {
       await updateDoc(countRef, {
@@ -17,29 +17,20 @@ function App() {
     }
   };
 
-  // Fetch the initial count and listen for updates in real-time
-  const fetchCount = async () => {
-    try {
-      const docSnap = await getDoc(countRef);
+  // Fetch count initially and set up real-time updates
+  useEffect(() => {
+    // Listen to Firestore updates in real-time
+    const unsubscribe = onSnapshot(countRef, (docSnap) => {
       if (docSnap.exists()) {
         setCount(docSnap.data().count);
-        setLoading(false); // Set loading to false once data is fetched
-      } else {
-        // If the document doesn't exist, initialize it with count 0
-        await updateDoc(countRef, {
-          count: 0,
-        });
-        setCount(0);
         setLoading(false);
+      } else {
+        console.log("No such document!");
       }
-    } catch (error) {
-      console.error("Error getting count: ", error);
-    }
-  };
+    });
 
-  // Use useEffect to fetch the count when the component mounts
-  useEffect(() => {
-    fetchCount();
+    // Cleanup listener on component unmount
+    return () => unsubscribe();
   }, []);
 
   return (
