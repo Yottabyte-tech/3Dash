@@ -14,7 +14,7 @@
     "add": "git add .",
     "commit": "git commit -m 'update'",
     "gitpush": "git push origin main",
-    "push": "npm run add && npm run commit && npm run gitpush"
+    "push": "npm run add && npm run commit && npm run gitpush && npm run deploy"
   },
   "dependencies": {
     "firebase": "^11.3.1",
