@@ -9,16 +9,18 @@ function App() {
   // Function to increment count in Firestore
   const incrementCount = async () => {
     try {
-      const docSnap = await getDoc(countRef);
-      const currentCount = docSnap.exists() ? docSnap.data().count : 0;
-  
       await updateDoc(countRef, {
-        count: currentCount + 1,  // Increment manually by 1
+        count: increment(1), // Increment by 1
       });
+  
+      // Force a refetch of the count after updating
+      const docSnap = await getDoc(countRef);
+      setCount(docSnap.data().count);
     } catch (error) {
       console.error("Error incrementing count: ", error);
     }
   };
+  
   
 
   // Fetch the initial count and listen for updates in real-time
