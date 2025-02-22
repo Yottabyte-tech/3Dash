@@ -1,51 +1,36 @@
 // App.js
 import React, { useState, useEffect } from 'react';
-import { countRef, updateDoc, getDoc, increment } from './firebase'; // Import Firestore functions
+import { countRef, updateDoc, getDoc, increment, onSnapshot } from './firebase'; // Import onSnapshot
 
 function App() {
-  const [count, setCount] = useState(0); // Store the count value
+  const [count, setCount] = useState(0); // Default to 0
   const [loading, setLoading] = useState(true); // Handle loading state
 
-  // Function to increment count in Firestore
+  // Function to increment the count in Firestore
   const incrementCount = async () => {
     try {
+      // Increment the count in Firestore directly
       await updateDoc(countRef, {
         count: increment(1), // Increment by 1
       });
-  
-      // Force a refetch of the count after updating
-      const docSnap = await getDoc(countRef);
-      setCount(docSnap.data().count);
     } catch (error) {
       console.error("Error incrementing count: ", error);
     }
   };
-  
-  
 
-  // Fetch the initial count and listen for updates in real-time
-  const fetchCount = async () => {
-    try {
-      const docSnap = await getDoc(countRef);
-      if (docSnap.exists()) {
-        setCount(docSnap.data().count);
-        setLoading(false); // Set loading to false once data is fetched
-      } else {
-        // If the document doesn't exist, initialize it with count 0
-        await updateDoc(countRef, {
-          count: 0,
-        });
-        setCount(0); c 
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error("Error getting count: ", error);
-    }
-  };
-
-  // Use useEffect to fetch the count when the component mounts
+  // Fetch count initially and set up real-time updates
   useEffect(() => {
-    fetchCount();
+    const unsubscribe = onSnapshot(countRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setCount(docSnap.data().count); // Update state with real-time count
+        setLoading(false);
+      } else {
+        console.log("No such document!");
+      }
+    });
+
+    // Cleanup listener when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   return (
