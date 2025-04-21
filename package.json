@@ -17,6 +17,7 @@
     "push": "npm run add && npm run commit && npm run gitpush && npm run deploy"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.1",
     "@tailwindcss/vite": "^4.0.8",
     "firebase": "^11.3.1",
     "gh-pages": "^6.3.0",
