@@ -30,8 +30,18 @@ body {
   text-align: center;
   justify-content: center;
   align-items: flex-start;
-  flex-direction: column;
+  flex-direction: row;
   padding-top: 2rem;
+}
+
+.bordered{
+  border: 2px solid black;
+  border-radius: 20px;
+
+  width: 110%;
+  height: 60%;
+
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.1) 100%);
 }
 
 h1 {

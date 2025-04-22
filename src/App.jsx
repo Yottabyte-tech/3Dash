@@ -1,11 +1,12 @@
-// App.js
 import React, { useState, useEffect } from 'react';
-import { countRef, updateDoc, getDoc, increment, onSnapshot } from './firebase'; // Import onSnapshot
+import Header from './Header';
+import ImageGallery from './ImageGallery';
 
 function App() {
   return (
     <div>
-      <p>test1</p>
+      <Header />
+      <ImageGallery />
     </div>
   );
 }
