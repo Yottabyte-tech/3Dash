@@ -58,6 +58,10 @@ function ImageGallery() {
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
+      if(fileExt !== 'jpg' || fileExt !== 'png' || fileExt !== 'svg' || fileExt !== 'webp'){
+        alert('File Format Not Supported');
+        return;
+      }
       // Upload file to Supabase Storage
       const { error: uploadError, data } = await supabase.storage
         .from('images')
