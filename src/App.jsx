@@ -5,7 +5,7 @@ import { countRef, updateDoc, getDoc, increment, onSnapshot } from './firebase';
 function App() {
   return (
     <div>
-      
+      <p>test1</p>
     </div>
   );
 }
