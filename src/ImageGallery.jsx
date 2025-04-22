@@ -5,6 +5,7 @@ function ImageGallery() {
   const [images, setImages] = useState([]);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchImages();
@@ -47,6 +48,47 @@ function ImageGallery() {
     }
   }
 
+  async function handleFileUpload(event) {
+    try {
+      setUploading(true);
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Upload file to Supabase Storage
+      const { error: uploadError, data } = await supabase.storage
+        .from('images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+
+      // Add image to database
+      const { data: imageData, error: dbError } = await supabase
+        .from('images')
+        .insert([
+          { url: publicUrl, link: publicUrl }
+        ])
+        .select();
+
+      if (dbError) throw dbError;
+      
+      setImages([...images, ...imageData]);
+    } catch (error) {
+      console.error('Error uploading image:', error.message);
+      alert('Error uploading image!');
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function handleDeleteImage(id) {
     try {
       const { error } = await supabase
@@ -68,16 +110,26 @@ function ImageGallery() {
 
   return (
     <div>
-      <form onSubmit={handleAddImage}>
-        <input
-          type="text"
-          value={newImageUrl}
-          onChange={(e) => setNewImageUrl(e.target.value)}
-          placeholder="Enter image URL"
-          style={{ width: '300px', padding: '8px', marginRight: '10px' }}
-        />
-        <button type="submit">Add Image</button>
-      </form>
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
+
+        <div>
+            <br></br>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={uploading}
+            style={{ display: 'none' }}
+            id="fileInput"
+          />
+          <button
+            onClick={() => document.getElementById('fileInput').click()}
+            disabled={uploading}
+          >
+            {uploading ? 'Uploading...' : 'Upload Image'}
+          </button>
+        </div>
+      </div>
 
       <div style={{ 
         display: 'grid', 
@@ -97,7 +149,7 @@ function ImageGallery() {
                 src={image.url}
                 alt={`Gallery image`}
                 style={{
-                  width: '100%',
+                  width: '200px',
                   height: '200px',
                   objectFit: 'cover',
                   borderRadius: '8px',
